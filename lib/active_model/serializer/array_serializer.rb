@@ -4,9 +4,10 @@ module ActiveModel
       include Enumerable
       delegate :each, to: :@objects
 
-      attr_reader :meta, :meta_key
+      attr_reader :meta, :meta_key, :root
 
       def initialize(objects, options = {})
+        @root = options.fetch(:root, nil)
         options.merge!(root: nil)
 
         @objects = objects.map do |object|
@@ -21,11 +22,15 @@ module ActiveModel
       end
 
       def json_key
-        @objects.first.json_key if @objects.first
+        if @root.present?
+          @root
+        else
+          @objects.first.json_key if @objects.first
+        end
       end
 
       def root=(root)
-        @objects.first.root = root if @objects.first
+        @objects.first.root = root if @root.blank? && @objects.first
       end
     end
   end
